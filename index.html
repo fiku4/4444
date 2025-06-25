@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SDGs 冒險家：老鷹接魚</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #a0d8f7, #ffffff);
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      user-select: none;
+    }
+    #game {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      padding: 15px;
+    }
+    h1 {
+      color: #00796b;
+    }
+    #status, #score, #message {
+      font-size: 18px;
+      color: #004d40;
+    }
+    #gameCanvas {
+      background: linear-gradient(to top, #66bb6a, #a5d6a7);
+      border: 2px solid #004d40;
+      border-radius: 10px;
+      display: block;
+      margin: 10px auto 0;
+    }
+    #gameArea {
+      margin-top: 20px;
+      height: 400px;
+      position: relative;
+      border: 2px solid #00796b;
+      background-color: #e0f7fa;
+      display: none;
+    }
+    .item {
+      font-size: 32px;
+      position: absolute;
+      cursor: pointer;
+    }
+    #nextLevelBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
+    #nextLevelBtn:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1 id="title">SDGs 冒險家：老鷹接魚</h1>
+    <div id="status">魚: 0 / 10 | 撞到涼鞋: 0 / 3</div>
+    <canvas id="gameCanvas" width="400" height="300"></canvas>
+    <div id="gameArea"></div>
+    <p id="score" style="display:none;">分數：0</p>
+    <p id="message"></p>
+    <button id="nextLevelBtn">下一關 ➡️</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const statusDiv = document.getElementById("status");
+    const nextLevelBtn = document.getElementById("nextLevelBtn");
+
+    const seagullEmoji = "🦅";
+    const fishEmoji = "🐟";
+    const slipperEmoji = "👡";
+    const seagullWidth = 40;
+    const seagullHeight = 40;
+    const itemSize = 30;
+
+    let seagullX = canvas.width / 2 - seagullWidth / 2;
+    const seagullY = canvas.height - seagullHeight - 10;
+
+    let fallingItems = [];
+    let score = 0;
+    let mistakes = 0;
+    const fishTarget = 10;
+    const maxMistakes = 3;
+    let gameRunning = true;
+
+    function spawnItem() {
+      const x = Math.random() * (canvas.width - itemSize);
+      const isFish = Math.random() < 0.7;
+      const emoji = isFish ? fishEmoji : slipperEmoji;
+      fallingItems.push({ x, y: -itemSize, emoji, isFish });
+    }
+
+    function drawEmoji(emoji, x, y, size) {
+      ctx.font = `${size}px serif`;
+      ctx.textBaseline = "top";
+      ctx.fillText(emoji, x, y);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawEmoji(seagullEmoji, seagullX, seagullY, seagullHeight);
+      fallingItems.forEach(item => drawEmoji(item.emoji, item.x, item.y, itemSize));
+    }
+
+    function isColliding(aX, aY, aW, aH, bX, bY, bW, bH) {
+      return !(bX > aX + aW || bX + bW < aX || bY > aY + aH || bY + bH < aY);
+    }
+
+    function update() {
+      if (!gameRunning) return;
+      for (let i = fallingItems.length - 1; i >= 0; i--) {
+        let item = fallingItems[i];
+        item.y += 3;
+        if (isColliding(seagullX, seagullY, seagullWidth, seagullHeight, item.x, item.y, itemSize, itemSize)) {
+          if (item.isFish) {
+            score++;
+            if (score >= fishTarget) {
+              gameRunning = false;
+              alert("恭喜！接到10隻魚，遊戲完成！");
+              nextLevelBtn.style.display = "inline-block";
+              return;
+            }
+          } else {
+            mistakes++;
+            if (mistakes >= maxMistakes) {
+              alert("撞到3次涼鞋，遊戲失敗，重新開始！");
+              resetGame();
+              return;
+            }
+          }
+          fallingItems.splice(i, 1);
+        } else if (item.y > canvas.height) {
+          fallingItems.splice(i, 1);
+        }
+      }
+      draw();
+      updateStatus();
+      requestAnimationFrame(update);
+    }
+
+    function updateStatus() {
+      statusDiv.textContent = `魚: ${score} / ${fishTarget} | 撞到涼鞋: ${mistakes} / ${maxMistakes}`;
+    }
+
+    function resetGame() {
+      score = 0;
+      mistakes = 0;
+      fallingItems = [];
+      seagullX = canvas.width / 2 - seagullWidth / 2;
+      gameRunning = true;
+      nextLevelBtn.style.display = "none";
+      updateStatus();
+    }
+
+    window.addEventListener("keydown", e => {
+      if (!gameRunning) return;
+      if (e.key === "ArrowLeft" || e.key === "a") {
+        seagullX = Math.max(0, seagullX - 30);
+      } else if (e.key === "ArrowRight" || e.key === "d") {
+        seagullX = Math.min(canvas.width - seagullWidth, seagullX + 30);
+      }
+    });
+
+    nextLevelBtn.addEventListener("click", () => {
+      alert("前往下一關！");
+      // window.location.href = 'level2.html'; // ← 真正跳轉請取消註解這行
+    });
+
+    setInterval(() => {
+      if (gameRunning) spawnItem();
+    }, 700);
+
+    resetGame();
+    update();
+  </script>
+</body>
+</html>
+
+
+

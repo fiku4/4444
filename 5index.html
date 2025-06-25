@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>節能大挑戰 💡🏠</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f8e9;
+      text-align: center;
+      padding: 20px;
+    }
+    #game {
+      max-width: 500px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #33691e;
+    }
+    .option {
+      display: inline-block;
+      width: 90%;
+      margin: 10px 0;
+      padding: 15px;
+      border: 2px solid #8bc34a;
+      border-radius: 10px;
+      background-color: #dcedc8;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .option:hover {
+      background-color: #aed581;
+    }
+    #timer, #score, #lives, #message {
+      margin: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1>節能大挑戰 💡🏠</h1>
+    <div id="question">請選擇正確的節能行為：</div>
+    <div id="options"></div>
+    <div id="timer">剩餘時間：<span id="time">3</span> 秒</div>
+    <div id="score">分數：0</div>
+    <div id="lives">❤️❤️❤️</div>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const questions = [
+      { correct: "利用自然光寫作業", wrong: "白天開燈寫作業" },
+      { correct: "冷氣設定 26–28℃", wrong: "冷氣設定 18℃" },
+      { correct: "電腦關機並拔插頭", wrong: "電腦不用也插著插頭不關" },
+      { correct: "累積衣服再一起洗", wrong: "洗衣機每次只洗一件衣服" },
+      { correct: "使用 LED 燈泡", wrong: "使用白熾燈" }
+    ];
+
+    let score = 0;
+    let lives = 3;
+    let timer;
+    let countdown;
+    const scoreEl = document.getElementById("score");
+    const livesEl = document.getElementById("lives");
+    const messageEl = document.getElementById("message");
+    const optionsEl = document.getElementById("options");
+    const timeEl = document.getElementById("time");
+
+    function renderQuestion() {
+      if (score >= 10) {
+        messageEl.textContent = "🎉 你是節電小天使！過關成功！";
+        optionsEl.innerHTML = "";
+        clearInterval(countdown);
+        return;
+      }
+      if (lives <= 0) {
+        messageEl.textContent = "💥 用電爆表！遊戲失敗！";
+        optionsEl.innerHTML = "";
+        clearInterval(countdown);
+        return;
+      }
+
+      const q = questions[Math.floor(Math.random() * questions.length)];
+      const correct = document.createElement("div");
+      const wrong = document.createElement("div");
+      correct.className = wrong.className = "option";
+      correct.textContent = q.correct;
+      wrong.textContent = q.wrong;
+      optionsEl.innerHTML = "";
+
+      const shuffled = Math.random() > 0.5 ? [correct, wrong] : [wrong, correct];
+      shuffled.forEach(opt => optionsEl.appendChild(opt));
+
+      correct.onclick = () => {
+        score++;
+        updateDisplay();
+        resetTimer();
+        renderQuestion();
+      };
+      wrong.onclick = () => {
+        lives--;
+        updateDisplay();
+        resetTimer();
+        renderQuestion();
+      };
+
+      resetTimer();
+    }
+
+    function updateDisplay() {
+      scoreEl.textContent = `分數：${score}`;
+      livesEl.textContent = "❤️".repeat(lives);
+    }
+
+    function resetTimer() {
+      clearInterval(countdown);
+      let time = 3;
+      timeEl.textContent = time;
+      countdown = setInterval(() => {
+        time--;
+        timeEl.textContent = time;
+        if (time <= 0) {
+          clearInterval(countdown);
+          lives--;
+          updateDisplay();
+          renderQuestion();
+        }
+      }, 1000);
+    }
+
+    renderQuestion();
+  </script>
+</body>
+</html>
+
+
+

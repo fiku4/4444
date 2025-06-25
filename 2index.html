@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SDGs 冒險家：海龜吃蝦</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #a0d8f7, #ffffff);
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      user-select: none;
+    }
+    #game {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      padding: 15px;
+    }
+    h1 {
+      color: #00796b;
+    }
+    #status, #score, #message {
+      font-size: 18px;
+      color: #004d40;
+    }
+    #gameArea {
+      margin-top: 20px;
+      height: 400px;
+      position: relative;
+      border: 2px solid #00796b;
+      background-color: #e0f7fa;
+    }
+    .item {
+      font-size: 32px;
+      position: absolute;
+      cursor: pointer;
+    }
+    #nextLevelButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50; /* Green */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none; /* Hidden by default */
+    }
+    #nextLevelButton:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1 id="title">海龜吃蝦 🐢🍤</h1>
+    <p id="score">分數：0</p>
+    <div id="gameArea"></div>
+    <p id="message"></p>
+    <button id="nextLevelButton">下一關</button>
+  </div>
+
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const scoreDisplay = document.getElementById("score");
+    const message = document.getElementById("message");
+    const nextLevelButton = document.getElementById("nextLevelButton");
+    let level2Score = 0;
+    const goal = 5;
+    let gameOver = false;
+    let spawnInterval;
+
+    // 前往下一關的函數（目前只是一個提示訊息）
+    function goToNextLevel() {
+      alert("太棒了！準備進入下一關！");
+      // 你可以在這裡加入下一關的邏輯
+      // 例如：window.location.href = 'next_level.html';
+    }
+
+    // 為下一關按鈕添加事件監聽器
+    nextLevelButton.addEventListener("click", goToNextLevel);
+
+    function spawnLevel2Item() {
+      if (gameOver) return;
+      const item = document.createElement("div");
+      item.classList.add("item");
+      const isShrimp = Math.random() < 0.7;
+      item.textContent = isShrimp ? "🍤" : "🩴";
+      item.style.left = Math.random() * 90 + "%";
+      item.style.top = Math.random() * 90 + "%";
+
+      item.onclick = () => {
+        if (gameOver) return;
+        if (item.textContent === "🍤") {
+          level2Score++;
+          scoreDisplay.textContent = `分數：${level2Score}`;
+          item.remove();
+          if (level2Score >= goal) {
+            message.textContent = "🎉 恭喜！你成功吃到 5 隻蝦子！";
+            clearInterval(spawnInterval);
+            gameOver = true;
+            nextLevelButton.style.display = "block"; // 顯示下一關按鈕
+          }
+        } else {
+          level2Score = 0;
+          scoreDisplay.textContent = "分數：0";
+          message.textContent = "你點到了垃圾，遊戲重新開始！";
+          clearInterval(spawnInterval);
+          gameOver = true;
+          nextLevelButton.style.display = "none"; // 如果點到垃圾，隱藏按鈕
+          setTimeout(() => {
+            message.textContent = "";
+            gameOver = false;
+            startLevel2();
+          }, 1500);
+        }
+      };
+
+      gameArea.appendChild(item);
+      setTimeout(() => {
+        if (gameArea.contains(item)) item.remove();
+      }, 3000);
+    }
+
+    function startLevel2() {
+      level2Score = 0;
+      scoreDisplay.textContent = "分數：0";
+      nextLevelButton.style.display = "none"; // 確保按鈕在關卡開始時是隱藏的
+      spawnInterval = setInterval(spawnLevel2Item, 800);
+    }
+
+    startLevel2();
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分類撿垃圾 ♻️</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #c8e6c9;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    #game {
+      max-width: 400px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    #bins {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+    .bin {
+      font-size: 36px;
+      width: 60px;
+      height: 60px;
+      border: 2px dashed #4caf50;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .trash {
+      font-size: 32px;
+      margin: 10px;
+      cursor: grab;
+      display: inline-block;
+    }
+    #score {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    #nextLevelButton { /* 新增的按鈕樣式 */
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #2196F3; /* 藍色 */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none; /* 預設隱藏 */
+    }
+    #nextLevelButton:hover {
+      background-color: #1976D2;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1>分類撿垃圾 ♻️</h1>
+    <p>拖曳垃圾到正確的分類桶！</p>
+
+    <div id="trashArea">
+      <span class="trash" draggable="true" data-type="recycle">🧃</span>
+      <span class="trash" draggable="true" data-type="trash">🍌</span>
+      <span class="trash" draggable="true" data-type="recycle">📦</span>
+      <span class="trash" draggable="true" data-type="trash">🍗</span>
+      <span class="trash" draggable="true" data-type="recycle">📰</span>
+    </div>
+
+    <div id="bins">
+      <div class="bin" id="recycleBin" data-accept="recycle">♻️</div>
+      <div class="bin" id="trashBin" data-accept="trash">🗑️</div>
+    </div>
+
+    <div id="score">得分：0 / 5</div>
+    <div id="message"></div>
+    <button id="nextLevelButton">下一關</button> </div>
+
+  <script>
+    const trashItems = document.querySelectorAll(".trash");
+    const bins = document.querySelectorAll(".bin");
+    const scoreText = document.getElementById("score");
+    const message = document.getElementById("message");
+    const nextLevelButton = document.getElementById("nextLevelButton"); // 獲取下一關按鈕
+    let score = 0;
+    const totalTrash = trashItems.length; // 根據實際垃圾數量設置總分
+
+    trashItems.forEach(item => {
+      item.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("type", item.getAttribute("data-type"));
+        e.dataTransfer.setData("id", item.innerHTML); // 將垃圾的內容（表情符號）作為 ID
+        // 為了確保拖曳的元素在拖曳完成後能被正確移除，可以暫時隱藏它
+        setTimeout(() => item.style.visibility = "hidden", 0);
+      });
+
+      // 當拖曳結束時，如果元素還可拖曳（表示沒有被正確放置），則讓它重新可見
+      item.addEventListener("dragend", e => {
+        if (e.dataTransfer.dropEffect === "none" && item.parentElement) {
+          item.style.visibility = "visible";
+        }
+      });
+    });
+
+    bins.forEach(bin => {
+      bin.addEventListener("dragover", e => e.preventDefault());
+      bin.addEventListener("drop", e => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData("type");
+        const emoji = e.dataTransfer.getData("id"); // 獲取垃圾的內容（表情符號）
+
+        // 找到對應的垃圾元素
+        const draggedItem = Array.from(document.querySelectorAll(".trash")).find(
+          t => t.innerHTML === emoji && t.style.visibility === "hidden"
+        );
+
+        if (type === bin.dataset.accept) {
+          score++;
+          scoreText.textContent = `得分：${score} / ${totalTrash}`; // 更新分數顯示
+          if (draggedItem) {
+            draggedItem.remove(); // 移除正確分類的垃圾
+          }
+          if (score >= totalTrash) { // 檢查是否所有垃圾都已分類
+            message.textContent = "🎉 恭喜分類完成！";
+            nextLevelButton.style.display = "block"; // 顯示下一關按鈕
+          }
+        } else {
+          message.textContent = "❌ 分類錯誤！再試試～";
+          if (draggedItem) {
+            draggedItem.style.visibility = "visible"; // 錯誤分類，讓垃圾重新顯示
+          }
+          setTimeout(() => message.textContent = "", 1500);
+        }
+      });
+    });
+
+    // 「下一關」按鈕的事件監聽器
+    nextLevelButton.addEventListener("click", () => {
+      alert("太棒了！準備進入下一關！");
+      // 你可以在這裡加入跳轉到下一關的邏輯，例如：
+      // window.location.href = 'next_level.html';
+    });
+  </script>
+</body>
+</html>
+
+

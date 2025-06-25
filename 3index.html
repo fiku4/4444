@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>松鼠摘堅果 🐿️🌰</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #dcedc8;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    #game {
+      max-width: 400px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
+    }
+    #forest {
+      position: relative;
+      width: 300px;
+      height: 400px;
+      background: linear-gradient(to top, #81c784 60%, #2e7d32);
+      margin: auto;
+      border: 3px solid #388e3c;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .nut {
+      position: absolute;
+      font-size: 28px;
+      pointer-events: none;
+    }
+    #squirrel {
+      position: absolute;
+      font-size: 32px;
+      cursor: grab;
+      left: 130px;
+      top: 350px;
+    }
+    #nextLevelButton { /* 新增的按鈕樣式 */
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50; /* 綠色 */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none; /* 預設隱藏 */
+    }
+    #nextLevelButton:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1>松鼠摘堅果 🐿️🌰</h1>
+    <p>拖曳松鼠🐿️摘堅果🌰，抓到 5 顆過關！</p>
+    <div id="forest">
+      <div id="squirrel">🐿️</div>
+    </div>
+    <p id="score">得分：0 / 5</p>
+    <p id="message"></p>
+    <button id="nextLevelButton">下一關</button> </div>
+
+  <script>
+    const squirrel = document.getElementById("squirrel");
+    const forest = document.getElementById("forest");
+    const scoreText = document.getElementById("score");
+    const message = document.getElementById("message");
+    const nextLevelButton = document.getElementById("nextLevelButton"); // 獲取下一關按鈕
+    const maxScore = 5;
+    let score = 0;
+
+    // 生成 10 顆堅果
+    for (let i = 0; i < 10; i++) {
+      const nut = document.createElement("div");
+      nut.classList.add("nut");
+      nut.textContent = "🌰";
+      nut.style.left = Math.random() * 260 + "px";
+      nut.style.top = Math.random() * 250 + "px";
+      forest.appendChild(nut);
+    }
+
+    // 拖曳機制
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    squirrel.addEventListener("mousedown", e => {
+      isDragging = true;
+      offsetX = e.offsetX;
+      offsetY = e.offsetY;
+    });
+
+    document.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      const rect = forest.getBoundingClientRect();
+      let x = e.clientX - rect.left - offsetX;
+      let y = e.clientY - rect.top - offsetY;
+
+      // 限制松鼠移動範圍
+      x = Math.max(0, Math.min(x, forest.clientWidth - 32));
+      y = Math.max(0, Math.min(y, forest.clientHeight - 32));
+
+      squirrel.style.left = x + "px";
+      squirrel.style.top = y + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    // 碰撞與回原點邏輯
+    function checkCollision() {
+      if (score >= maxScore) return; // 如果已經過關，停止檢查
+
+      const squirrelRect = squirrel.getBoundingClientRect();
+      document.querySelectorAll(".nut").forEach(nut => {
+        const nutRect = nut.getBoundingClientRect();
+        const overlap = !(
+          nutRect.right < squirrelRect.left ||
+          nutRect.left > squirrelRect.right ||
+          nutRect.bottom < squirrelRect.top ||
+          nutRect.top > squirrelRect.bottom
+        );
+
+        if (overlap && nut.style.display !== "none") {
+          nut.style.display = "none";
+          score++;
+          scoreText.textContent = `得分：${score} / ${maxScore}`;
+          squirrel.style.left = "130px";  // 回到原點
+          squirrel.style.top = "350px";   // 回到原點
+
+          if (score >= maxScore) {
+            message.textContent = "🎉 恭喜完成任務，進入下一關！";
+            nextLevelButton.style.display = "block"; // 顯示下一關按鈕
+          }
+        }
+      });
+    }
+
+    // 當點擊「下一關」按鈕時執行的函數
+    nextLevelButton.addEventListener("click", () => {
+      alert("準備好進入下一關了嗎？"); // 你可以在這裡添加跳轉到下一關的邏輯
+      // 例如：window.location.href = 'next_level.html';
+    });
+
+    setInterval(checkCollision, 100);
+  </script>
+</body>
+</html>
+
+
